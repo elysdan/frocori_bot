@@ -1,0 +1,6 @@
+- [x] Inicializar el proyecto Node.js y crear directorio `whatsapp-bot`
+- [x] Instalar dependencias (`express`, `axios`, `dotenv`)
+- [x] Crear archivo `.env` para credenciales
+- [x] Crear archivo `index.js` con el servidor Express y endpoints del Webhook
+- [x] Implementar la función para enviar un mensaje de respuesta de prueba
+- [x] Generar instrucciones para la configuración del Webhook en Meta (usando ngrok)
