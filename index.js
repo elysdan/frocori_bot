@@ -8,7 +8,6 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
 const whatsappToken = process.env.WHATSAPP_TOKEN;
-const phoneNumberId = process.env.PHONE_NUMBER_ID;
 
 app.get('/', (req, res) => {
     const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
@@ -40,8 +39,11 @@ app.post('/', async (req, res) => {
         const value = changes?.value;
         const messages = value?.messages;
 
+        // Extraemos el ID del número de teléfono que RECIBIÓ el mensaje
+        const receivedPhoneNumberId = value?.metadata?.phone_number_id;
+
         // Si hay mensajes válidos y de tipo texto
-        if (messages && messages.length > 0) {
+        if (messages && messages.length > 0 && receivedPhoneNumberId) {
             const message = messages[0];
             const from = message.from; // Número de origen
             const msgBody = message.text?.body; // Contenido del mensaje
@@ -49,14 +51,14 @@ app.post('/', async (req, res) => {
             console.log(`Mensaje recibido de ${from}: "${msgBody}"`);
 
             if (msgBody) {
-                // Respondemos con exactamente el mismo texto
-                await sendReply(from, msgBody);
+                // Respondemos con exactamente el mismo texto, usando el MISMO número que lo recibió
+                await sendReply(from, msgBody, receivedPhoneNumberId);
             }
         }
     }
 });
 
-async function sendReply(to, text) {
+async function sendReply(to, text, phoneNumberId) {
     try {
         await axios({
             method: 'POST',
@@ -72,7 +74,7 @@ async function sendReply(to, text) {
                 text: { body: text }
             }
         });
-        console.log(`Eco enviado exitosamente a ${to}`);
+        console.log(`Eco enviado exitosamente a ${to} desde el número ${phoneNumberId}`);
     } catch (error) {
         console.error('Error al enviar el mensaje:', error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
     }
